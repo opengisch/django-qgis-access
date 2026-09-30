@@ -41,3 +41,15 @@ def ensure_api_key(user) -> ApiKey:
     if api_key is None:
         api_key = ApiKey.objects.create(user=user)
     return api_key
+
+
+def user_for_api_key(token: str):
+    """The user holding the key `token`, or None for a malformed or unknown key, or an inactive user."""
+    try:
+        key = uuid.UUID(token)
+    except ValueError:
+        return None
+    api_key = ApiKey.objects.select_related("user").filter(key=key).first()
+    if api_key is None or not api_key.user.is_active:
+        return None
+    return api_key.user

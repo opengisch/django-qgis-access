@@ -16,6 +16,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django_qgis_access.middleware.ApiKeyMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
 ]
 

@@ -71,16 +71,58 @@ class ApiKeyInline(ApiKeyInlineMixin, TabularInline):
 The inline follows the permissions of the `ApiKey` model: seeing keys takes `view_apikey`, revoking them
 `delete_apikey`.
 
+## Authenticating with API keys
+
+QGIS sends the key as `Authorization: Bearer <key>`. Two ways to accept it:
+
+**In a django-ninja API**, such as the `OAPIF` of django-oapif, with the `ninja` extra
+(`pip install 'django-qgis-access[ninja]'`):
+
+```python
+from django_oapif.auth import BasicAuth, DjangoAuth
+from django_oapif import OAPIF
+from django_qgis_access.auth import ApiKeyAuth
+
+api = OAPIF(auth=[ApiKeyAuth(), BasicAuth(), DjangoAuth()])
+```
+
+`ApiKeyAuth` returns the active user holding the key and makes it `request.user`. Without a key, or with a
+bad one, the next method has its go. It needs no CSRF exemption: django-ninja checks CSRF only for cookie
+authentication.
+
+**For any view**, with the middleware, listed after Django's `AuthenticationMiddleware`, whose user it
+replaces:
+
+```python
+MIDDLEWARE = [
+    ...
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django_qgis_access.middleware.ApiKeyMiddleware",
+    ...
+]
+```
+
+It accepts keys only under the paths of `QGIS_ACCESS_PATH_PREFIXES` (by default `/oapif/`, matched against
+`request.path_info`). A request with the valid key of an active user becomes that user's (`request.user`
+and `request.auser()`), and skips the CSRF check; every other request, cookie sessions included, keeps it.
+
+Only `django_qgis_access.auth` needs django-ninja; the rest of the package imports without it.
+
 ## Settings
 
 | Setting | Default | |
 |---|---|---|
 | `QGIS_ACCESS_AUTHCFG_PREFIX` | `"qgs"` | The first three characters of the ids of the QGIS authentication configurations, alphanumeric. |
+| `QGIS_ACCESS_PATH_PREFIXES` | `("/oapif/",)` | The paths under which `ApiKeyMiddleware` accepts API keys. |
 
 ## Security
 
 - An API key is a permanent credential, sitting in a file on the laptop of a QGIS user. It does not expire;
   it lasts until it is revoked, by deleting it in the admin.
+- Keep Bearer authentication to the OGC API Features endpoint, as the middleware does by default. Accepted
+  sitewide, a key would be a login without password or second factor, leaving a policy of multi-factor
+  authentication to whoever copies an auth file. Scoped this way, a leaked key costs what a QGIS session
+  costs, and the admin falls back on the session.
 - The admin never shows a whole key: its inline shows the last four characters, and its form carries the
   primary key of the rows, never their keys. Only superusers see the keys of superusers, as a key acts as
   its owner.

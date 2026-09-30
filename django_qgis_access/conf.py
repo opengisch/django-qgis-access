@@ -7,6 +7,8 @@ from django.conf import settings
 DEFAULTS: dict[str, Any] = {
     # the first three characters of the QGIS authentication configuration ids, see authcfg.py
     "AUTHCFG_PREFIX": "qgs",
+    # the paths under which ApiKeyMiddleware accepts API keys
+    "PATH_PREFIXES": ("/oapif/",),
 }
 
 
