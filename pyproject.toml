@@ -53,4 +53,6 @@ extend-exclude = [
 lint.pydocstyle.convention = "google"
 lint.fixable = ["ALL"]
 lint.extend-select = ["UP"]
+# Django declares its options as mutable class attributes
+lint.extend-ignore = ["RUF012"]
 format.preview = true
