@@ -71,6 +71,36 @@ class ApiKeyInline(ApiKeyInlineMixin, TabularInline):
 The inline follows the permissions of the `ApiKey` model: seeing keys takes `view_apikey`, revoking them
 `delete_apikey`.
 
+## Downloads
+
+```python
+urlpatterns = [
+    ...
+    path("qgis/", include("django_qgis_access.urls")),
+]
+```
+
+| URL name | Path | |
+|---|---|---|
+| `qgis_access:auth_xml` | `auth.xml` | The QGIS authentication file of the user. |
+
+The authentication file, `auth-0042.xml` for user 42, holds one configuration of the `APIHeader` method,
+with `authcfg_id(user)` as id and name, which sends `Authorization: Bearer <key>`. Downloading it mints the
+key of the user if they have none yet, so only those allowed to download ever hold one. QGIS imports it in
+its options: *Authentication*, *Utilities*, *Import Authentication Configurations from File*.
+
+The downloads take the permission `django_qgis_access.download_qgis`:
+
+- an authenticated user without it gets a 403;
+- an anonymous request is sent to the login page (`LOGIN_URL`), or, with `QGIS_ACCESS_ALLOW_BASIC`,
+  authenticated with HTTP Basic credentials, checked by the authentication backends of Django. Missing or
+  wrong credentials get a 401 with `WWW-Authenticate: Basic realm="QGIS"`. This is meant for clients such
+  as a QGIS plugin, which exchange a username and password once for the auth file, then use the key. No
+  session is opened.
+
+The downloads answer GET and HEAD only, and are never cached (`Cache-Control: no-store`). The decorator
+that guards them, `django_qgis_access.views.qgis_access_required`, is there for views of your own.
+
 ## Authenticating with API keys
 
 QGIS sends the key as `Authorization: Bearer <key>`. Two ways to accept it:
@@ -114,6 +144,7 @@ Only `django_qgis_access.auth` needs django-ninja; the rest of the package impor
 |---|---|---|
 | `QGIS_ACCESS_AUTHCFG_PREFIX` | `"qgs"` | The first three characters of the ids of the QGIS authentication configurations, alphanumeric. |
 | `QGIS_ACCESS_PATH_PREFIXES` | `("/oapif/",)` | The paths under which `ApiKeyMiddleware` accepts API keys. |
+| `QGIS_ACCESS_ALLOW_BASIC` | `False` | Whether the downloads take HTTP Basic credentials from requests without a session. |
 
 ## Security
 
@@ -123,6 +154,10 @@ Only `django_qgis_access.auth` needs django-ninja; the rest of the package impor
   sitewide, a key would be a login without password or second factor, leaving a policy of multi-factor
   authentication to whoever copies an auth file. Scoped this way, a leaked key costs what a QGIS session
   costs, and the admin falls back on the session.
+- Keys are issued, never entered, and only to users with the permission `download_qgis`: downloading the
+  auth file is what mints them.
+- Leave `QGIS_ACCESS_ALLOW_BASIC` off where logins require a second factor (TOTP with django-allauth, say):
+  HTTP Basic takes a password alone, and would hand out a key, a permanent credential, for it.
 - The admin never shows a whole key: its inline shows the last four characters, and its form carries the
   primary key of the rows, never their keys. Only superusers see the keys of superusers, as a key acts as
   its owner.

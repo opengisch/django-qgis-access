@@ -9,6 +9,8 @@ DEFAULTS: dict[str, Any] = {
     "AUTHCFG_PREFIX": "qgs",
     # the paths under which ApiKeyMiddleware accepts API keys
     "PATH_PREFIXES": ("/oapif/",),
+    # whether the downloads take HTTP Basic credentials, from clients without a session
+    "ALLOW_BASIC": False,
 }
 
 

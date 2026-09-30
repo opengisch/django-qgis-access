@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import include, path
 
 from . import views
 from .admin import site
@@ -10,4 +10,5 @@ urlpatterns = [
     path("oapif/whoami", views.whoami),
     path("oapif/async-whoami", views.async_whoami),
     path("other/whoami", views.whoami),
+    path("qgis/", include("django_qgis_access.urls")),
 ]
