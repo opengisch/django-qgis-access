@@ -1,0 +1,4 @@
+<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
+<qgis projectname="Minimal" version="3.34.0-Prizren">
+  <datasource>authcfg=abc1234 url='https://example.test:8000/oapif'</datasource>
+</qgis>

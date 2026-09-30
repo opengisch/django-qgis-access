@@ -11,6 +11,18 @@ DEFAULTS: dict[str, Any] = {
     "PATH_PREFIXES": ("/oapif/",),
     # whether the downloads take HTTP Basic credentials, from clients without a session
     "ALLOW_BASIC": False,
+    # the Django template of the QGIS project, None for no project
+    "PROJECT_TEMPLATE": None,
+    # the base URL of the site in the project template, replaced by the URL of the server
+    "PROJECT_URL_PLACEHOLDER": "http://localhost",
+    # the authentication configuration id in the project template, replaced by the one of the user
+    "PROJECT_AUTHCFG_PLACEHOLDER": "qgisacc",
+    # the dotted path of a callable taking the request, returning more context for the project template
+    "PROJECT_CONTEXT": None,
+    # the name of the project file, before the user id
+    "PROJECT_FILENAME": "project",
+    # the URL of the server in the project, by default the one of the request
+    "SERVER_URL": None,
 }
 
 

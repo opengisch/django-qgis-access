@@ -83,11 +83,38 @@ urlpatterns = [
 | URL name | Path | |
 |---|---|---|
 | `qgis_access:auth_xml` | `auth.xml` | The QGIS authentication file of the user. |
+| `qgis_access:project` | `project.qgs` | The QGIS project, made out to the user. |
+
+### The auth file
 
 The authentication file, `auth-0042.xml` for user 42, holds one configuration of the `APIHeader` method,
 with `authcfg_id(user)` as id and name, which sends `Authorization: Bearer <key>`. Downloading it mints the
 key of the user if they have none yet, so only those allowed to download ever hold one. QGIS imports it in
 its options: *Authentication*, *Utilities*, *Import Authentication Configurations from File*.
+
+### The project
+
+The project is a Django template, `QGIS_ACCESS_PROJECT_TEMPLATE` (without one, `project.qgs` is a 404): a
+`.qgs` file saved by QGIS, connected to the site at `QGIS_ACCESS_PROJECT_URL_PLACEHOLDER` (e.g. a
+development server at `http://localhost:8000`) through the authentication configuration
+`QGIS_ACCESS_PROJECT_AUTHCFG_PLACEHOLDER` (seven alphanumeric characters, `qgisacc` by default). The
+download, `project-0042.qgs` for user 42, has
+
+- the URL placeholder replaced by the URL of the server: `QGIS_ACCESS_SERVER_URL`, or the one of the request
+  (`request.build_absolute_uri("/")`), without trailing slash;
+- the authcfg placeholder replaced by `authcfg_id(user)`, the id of the configuration of the auth file;
+- the attributes `saveUser`, `saveUserFull` and `saveDateTime` of the root tag `<qgis>` set to the username,
+  the full name of the user and the time of the download; the others, such as `version`, stay as they are;
+- the template rendered with the context `authcfg`, `user`, `user_id`, `username`, `generation_time` and
+  `server_url`, to which `QGIS_ACCESS_PROJECT_CONTEXT`, the dotted path of a callable taking the request,
+  adds a dictionary of its own (its keys do not override those above). Project variables, for one, can
+  take values from it: `<value type="QString">{{ user_id }}</value>`.
+
+The replacements are plain text, so choose placeholders that appear nowhere else in the project. Should the
+project contain `{{`, `{%` or `{#` of its own, wrap them in `{% verbatim %}`. The template is read and
+prepared once per process: restart the server after changing it.
+
+### Access
 
 The downloads take the permission `django_qgis_access.download_qgis`:
 
@@ -145,6 +172,12 @@ Only `django_qgis_access.auth` needs django-ninja; the rest of the package impor
 | `QGIS_ACCESS_AUTHCFG_PREFIX` | `"qgs"` | The first three characters of the ids of the QGIS authentication configurations, alphanumeric. |
 | `QGIS_ACCESS_PATH_PREFIXES` | `("/oapif/",)` | The paths under which `ApiKeyMiddleware` accepts API keys. |
 | `QGIS_ACCESS_ALLOW_BASIC` | `False` | Whether the downloads take HTTP Basic credentials from requests without a session. |
+| `QGIS_ACCESS_PROJECT_TEMPLATE` | `None` | The name of the Django template of the QGIS project. |
+| `QGIS_ACCESS_PROJECT_URL_PLACEHOLDER` | `"http://localhost"` | The URL in the project template that stands for the server. |
+| `QGIS_ACCESS_PROJECT_AUTHCFG_PLACEHOLDER` | `"qgisacc"` | The authentication configuration id in the project template that stands for the one of the user. |
+| `QGIS_ACCESS_SERVER_URL` | `None` | The URL of the server in the project, e.g. `"https://example.com"`; by default the one of the request. |
+| `QGIS_ACCESS_PROJECT_CONTEXT` | `None` | The dotted path of a callable taking the request and returning more context for the project template. |
+| `QGIS_ACCESS_PROJECT_FILENAME` | `"project"` | The name of the project file, before the user id: `project-0042.qgs`. |
 
 ## Security
 
