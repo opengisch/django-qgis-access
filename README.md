@@ -128,6 +128,25 @@ The downloads take the permission `django_qgis_access.download_qgis`:
 The downloads answer GET and HEAD only, and are never cached (`Cache-Control: no-store`). The decorator
 that guards them, `django_qgis_access.views.qgis_access_required`, is there for views of your own.
 
+### In the admin
+
+`django_qgis_access/admin_downloads.html` is a box with the two download links, shown to the users with the
+permission `download_qgis` only. Include it in the admin index, e.g. in a `templates/admin/index.html` of
+your own:
+
+```django
+{% extends "admin/index.html" %}
+
+{% block content %}
+    {% include "django_qgis_access/admin_downloads.html" %}
+    {{ block.super }}
+{% endblock %}
+```
+
+Pass `hide_project=True` to the include for the auth file alone, on a site without project template. The
+markup is styled for Unfold (its Tailwind classes and Material Symbols icons); the stock admin shows it as a
+plain table. Its texts are marked for translation.
+
 ## Authenticating with API keys
 
 QGIS sends the key as `Authorization: Bearer <key>`. Two ways to accept it:
