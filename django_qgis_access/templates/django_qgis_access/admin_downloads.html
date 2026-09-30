@@ -1,0 +1,34 @@
+{% load i18n %}
+{% if perms.django_qgis_access.download_qgis %}
+    <div class="bg-base-50 mb-6 rounded-default p-3 dark:bg-base-800">
+        <table class="border border-base-400/10 border-spacing-none border-separate rounded-default overflow-hidden shadow-xs w-full dark:border-base-800">
+            <caption class="font-semibold mb-3 text-base-900 text-left dark:text-base-100">
+                {% translate "Download QGIS Files" %}
+            </caption>
+            <tbody>
+                {% if not hide_project %}
+                    <tr class="bg-white dark:bg-base-900 model-group">
+                        <th scope="row" class="font-normal p-3 text-left border-b border-base-100 dark:border-base-800">
+                            <div class="flex items-center">
+                                <img src="https://raw.githubusercontent.com/qgis/QGIS/refs/heads/master/images/icons/qgis_qgs_icon.svg" class="pr-2" alt="QGIS Project" style="height: 1rem">
+                                <a href="{% url 'qgis_access:project' %}">
+                                    {% translate "Download QGIS project" %}
+                                </a>
+                            </div>
+                        </th>
+                    </tr>
+                {% endif %}
+                <tr class="bg-white dark:bg-base-900 model-group">
+                    <th scope="row" class="font-normal p-3 text-left">
+                        <div class="flex items-center">
+                            <span class="material-symbols-outlined pr-2">key</span>
+                            <a href="{% url 'qgis_access:auth_xml' %}">
+                                {% translate "Download authentication file" %}
+                            </a>
+                        </div>
+                    </th>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+{% endif %}

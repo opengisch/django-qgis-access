@@ -1,0 +1,8 @@
+<!DOCTYPE qgis_authentication>
+<qgis_authentication>
+    <configurations>
+        <AuthMethodConfig id="{{ authcfg }}" method="APIHeader" name="{{ authcfg }}" uri="" version="2">
+            <Config Authorization="Bearer {{ api_key }}"/>
+        </AuthMethodConfig>
+    </configurations>
+</qgis_authentication>

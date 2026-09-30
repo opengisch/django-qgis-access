@@ -1,0 +1,23 @@
+<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
+<qgis saveDateTime="2024-01-01T00:00:00" saveUser="author" projectname="Test project" version="3.40.0-Bratislava" saveUserFull="Project Author">
+  <projectlayers>
+    <maplayer type="vector">
+      <id>points</id>
+      <datasource>authcfg=qgisacc pagingEnabled='default' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='tests.point' url='http://localhost/oapif' version='OGC_API_FEATURES'</datasource>
+    </maplayer>
+  </projectlayers>
+  <properties>
+    <Variables>
+      <variableNames type="QStringList">
+        <value type="QString">user_id</value>
+        <value type="QString">username</value>
+        <value type="QString">team</value>
+      </variableNames>
+      <variableValues type="QStringList">
+        <value type="QString">{{ user_id }}</value>
+        <value type="QString">{{ username }}</value>
+        <value type="QString">{{ team }}</value>
+      </variableValues>
+    </Variables>
+  </properties>
+</qgis>

@@ -1,5 +1,7 @@
 """Settings of the test project."""
 
+from pathlib import Path
+
 SECRET_KEY = "django-qgis-access-tests"
 
 INSTALLED_APPS = [
@@ -16,6 +18,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django_qgis_access.middleware.ApiKeyMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
 ]
 
@@ -24,6 +27,7 @@ ROOT_URLCONF = "tests.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [Path(__file__).resolve().parent / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
