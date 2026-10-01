@@ -27,6 +27,7 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 ninja = ["django-ninja>=1.0"]
+drf = ["djangorestframework>=3.15"]
 dev = ["pre-commit"]
 
 [project.urls]

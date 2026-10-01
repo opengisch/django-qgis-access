@@ -41,26 +41,29 @@ class ApiKeyAuthTests(TestCase):
         self.assertEqual(self.get(Authorization=f"Bearer {self.key}").json(), {"user": "alice", "auth": "alice"})
 
 
-class WithoutNinjaTests(SimpleTestCase):
-    def test_only_the_ninja_auth_requires_ninja(self):
+class WithoutFrameworksTests(SimpleTestCase):
+    def test_only_the_framework_auths_require_their_framework(self):
         script = """
 import importlib, pkgutil, sys
 
 sys.modules["ninja"] = None
+sys.modules["rest_framework"] = None
 import django
 
 django.setup()
 import django_qgis_access
 
+optional = {"django_qgis_access.auth": "ninja", "django_qgis_access.drf": "rest_framework"}
 for module in pkgutil.walk_packages(django_qgis_access.__path__, "django_qgis_access."):
-    if module.name != "django_qgis_access.auth":
+    if module.name not in optional:
         importlib.import_module(module.name)
-try:
-    import django_qgis_access.auth
-except ImportError:
-    pass
-else:
-    sys.exit("django_qgis_access.auth imported without ninja")
+for name, framework in optional.items():
+    try:
+        importlib.import_module(name)
+    except ImportError:
+        pass
+    else:
+        sys.exit(f"{name} imported without {framework}")
 """
         subprocess.run(
             [sys.executable, "-c", script],
