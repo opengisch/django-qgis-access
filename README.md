@@ -149,7 +149,7 @@ plain table. Its texts are marked for translation.
 
 ## Authenticating with API keys
 
-QGIS sends the key as `Authorization: Bearer <key>`. Two ways to accept it:
+QGIS sends the key as `Authorization: Bearer <key>`. Three ways to accept it:
 
 **In a django-ninja API**, such as the `OAPIF` of django-oapif, with the `ninja` extra
 (`pip install 'django-qgis-access[ninja]'`):
@@ -165,6 +165,22 @@ api = OAPIF(auth=[ApiKeyAuth(), BasicAuth(), DjangoAuth()])
 `ApiKeyAuth` returns the active user holding the key and makes it `request.user`. Without a key, or with a
 bad one, the next method has its go. It needs no CSRF exemption: django-ninja checks CSRF only for cookie
 authentication.
+
+**In a Django REST framework API**, with the `drf` extra (`pip install 'django-qgis-access[drf]'`):
+
+```python
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "django_qgis_access.drf.ApiKeyAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+}
+```
+
+`ApiKeyAuthentication` authenticates the active user holding the key, and needs no CSRF exemption either.
+Without a Bearer key, the next class has its go. Unlike `ApiKeyAuth`, it refuses a bad key, malformed,
+unknown, revoked or of an inactive user, with a `401 Unauthorized`, as Django REST framework's own
+`TokenAuthentication` does. Listed first, it answers `WWW-Authenticate: Bearer` to the requests it refuses.
 
 **For any view**, with the middleware, listed after Django's `AuthenticationMiddleware`, whose user it
 replaces:
@@ -182,7 +198,8 @@ It accepts keys only under the paths of `QGIS_ACCESS_PATH_PREFIXES` (by default 
 `request.path_info`). A request with the valid key of an active user becomes that user's (`request.user`
 and `request.auser()`), and skips the CSRF check; every other request, cookie sessions included, keeps it.
 
-Only `django_qgis_access.auth` needs django-ninja; the rest of the package imports without it.
+Only `django_qgis_access.auth` needs django-ninja, and only `django_qgis_access.drf` Django REST framework;
+the rest of the package imports without them.
 
 ## Settings
 
@@ -202,10 +219,11 @@ Only `django_qgis_access.auth` needs django-ninja; the rest of the package impor
 
 - An API key is a permanent credential, sitting in a file on the laptop of a QGIS user. It does not expire;
   it lasts until it is revoked, by deleting it in the admin.
-- Keep Bearer authentication to the OGC API Features endpoint, as the middleware does by default. Accepted
-  sitewide, a key would be a login without password or second factor, leaving a policy of multi-factor
-  authentication to whoever copies an auth file. Scoped this way, a leaked key costs what a QGIS session
-  costs, and the admin falls back on the session.
+- Keep Bearer authentication to the APIs QGIS uses: the OGC API Features endpoint, as the middleware does by
+  default, and the APIs you give `ApiKeyAuth` or `ApiKeyAuthentication`. Accepted sitewide, a key would be a
+  login without password or second factor, leaving a policy of multi-factor authentication to whoever copies
+  an auth file. Scoped this way, a leaked key costs what a QGIS session costs, and the admin falls back on
+  the session.
 - Keys are issued, never entered, and only to users with the permission `download_qgis`: downloading the
   auth file is what mints them.
 - Leave `QGIS_ACCESS_ALLOW_BASIC` off where logins require a second factor (TOTP with django-allauth, say):

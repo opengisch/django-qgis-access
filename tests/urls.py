@@ -1,12 +1,13 @@
 from django.urls import include, path
 
-from . import views
+from . import drf, views
 from .admin import site
 from .api import api
 
 urlpatterns = [
     path("admin/", site.urls),
     path("api/", api.urls),
+    path("drf/whoami", drf.whoami),
     path("oapif/whoami", views.whoami),
     path("oapif/async-whoami", views.async_whoami),
     path("other/whoami", views.whoami),

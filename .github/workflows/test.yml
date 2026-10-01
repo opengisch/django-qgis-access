@@ -33,7 +33,7 @@ jobs:
         cache-dependency-path: pyproject.toml
 
     - name: Install deps
-      run: python -m pip install -e '.[ninja]' "django~=${{ matrix.django }}.0"
+      run: python -m pip install -e '.[ninja,drf]' "django~=${{ matrix.django }}.0"
 
     - name: Run tests
       run: python runtests.py -v 2
